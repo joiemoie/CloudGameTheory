@@ -104,6 +104,8 @@ def user_utilities(max_prices, provider_prices, user_preferences):
 
   user_profits = np.tile(np.expand_dims(max_prices,1), [1, num_providers]) +\
                  user_preferences
+  user_profits = user_profits - provider_prices
+
   return user_profits
 
 # numpy function
