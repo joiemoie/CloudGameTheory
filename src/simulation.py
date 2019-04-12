@@ -3,7 +3,7 @@ import numpy as np
 import functions
 
 num_providers = 4
-num_users = 100
+num_users = 10
 
 # tf Graph input
 
@@ -23,10 +23,13 @@ with tf.Session() as sess:
   # Run the initializer
   sess.run(init)
 
-  random_prices = np.random.random((num_users)) * 5 + 10
-  final_prices = np.full(num_providers, 100.0)
-  random_preferences = np.random.random((num_users, num_providers)) * .1 + 10
-  lr = .1
+  #random_prices = np.random.random((num_users)) * 5 + 10
+  random_prices = np.full((num_users), 12.5)
+  final_prices = np.full(num_providers, 0.0)
+  random_preferences = np.random.random((num_users, num_providers)) * 0
+  #random_preferences[:,0] += np.random.random((num_users)) * 5
+
+  lr = .005
 
   for step in range(500):
     permutation = np.random.permutation(num_providers)
@@ -37,7 +40,7 @@ with tf.Session() as sess:
       temp_final_prices1 = np.copy(final_prices)
       temp_final_prices2 = np.copy(temp_final_prices1)
 
-      grad= sess.run(provider_grads, feed_dict = {max_prices: [random_prices], 
+      grad,temp= sess.run(provider_grads, feed_dict = {max_prices: [random_prices], 
                                       provider_prices: [temp_final_prices1], 
                                       selected_provider: [i],
                                       user_preferences: [random_preferences]})
@@ -49,23 +52,27 @@ with tf.Session() as sess:
       for perm2 in range(num_providers):
         if (perm2 != perm):
           j = permutation[perm2]
-          grad2= sess.run(provider_grads, feed_dict = {max_prices: [random_prices], 
+          grad2,temp= sess.run(provider_grads, feed_dict = {max_prices: [random_prices], 
                                       provider_prices: [temp_final_prices1], 
                                       selected_provider: [j],
                                       user_preferences: [random_preferences]})
           temp_final_prices2[j] = functions.gradient_update(temp_final_prices1, random_prices, random_preferences, j, grad2, lr)
 
       # user reacts based on the aggressive actions of the actors
-      grad = sess.run(provider_grads, feed_dict = {max_prices: [random_prices], 
+      grad,temp= sess.run(provider_grads, feed_dict = {max_prices: [random_prices], 
                                       provider_prices: [temp_final_prices2], 
                                       selected_provider: [i],
                                       user_preferences: [random_preferences]})
+
       final_prices[i] = functions.gradient_update(temp_final_prices2, random_prices, random_preferences, i, grad, lr)
 
     assignments = functions.user_assignments(final_prices, random_prices, random_preferences)
 
-    print(functions.provider_profits(final_prices, assignments), final_prices, np.mean(random_preferences, axis=0))
-
+    try:
+      print(functions.provider_profits(final_prices, assignments), temp, final_prices, np.mean(random_preferences, axis=0))
+      
+    except:
+      pass
   #isIncreasing = True
   #curr_max = np.sum((final_price < random_prices) * final_price)
   #while (isIncreasing):
