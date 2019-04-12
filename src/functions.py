@@ -133,7 +133,7 @@ def provider_gradients(provider_prices, selected_provider, max_prices, user_pref
   same_prof, same_price = same_profit(provider_prices, selected_provider, max_prices, user_preferences)
 
   high_prof, high_price = higher_profit(provider_prices, selected_provider, max_prices, user_preferences)
-  print(low_prof, same_prof, high_prof)
+  #print(low_prof, same_prof, high_prof)
 
 
   if (low_prof > same_prof and low_prof > high_prof):
