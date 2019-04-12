@@ -110,8 +110,8 @@ def higher_profit(provider_prices, selected_provider, max_prices, user_preferenc
   num_count = np.sum(isValid)
   if (num_count < 1):
     return [0.0, 0.0]
-
-  while (np.sum(isValid) >= num_count - 1 and np.sum(isValid > 0)):
+  old_prov_privce = provider_price
+  while (np.sum(isValid) >= num_count - 1 and np.sum(isValid) > 0):
     provider_price += .01
     user_profits[:, selected_provider] -= .01
       # gets the max of the profits
@@ -123,9 +123,18 @@ def higher_profit(provider_prices, selected_provider, max_prices, user_preferenc
     isValid = (user_max_profit == user_profit_by_provider) * 1.0
     isValid *= (user_profit_by_provider > 0) * 1.0
 
-  provider_price -= .01
+  if (provider_price-.01 != old_prov_privce):
+    provider_price-= .01
+  user_profits[:, selected_provider] += .01
+    # gets the max of the profits
+  user_max_profit = np.max(user_profits, 1)
 
-  return [(np.sum(isValid)+1) * provider_price, provider_price]
+  # gets all of the users profits for a single provider
+  user_profit_by_provider = user_profits[:, selected_provider]
+
+  isValid = (user_max_profit == user_profit_by_provider) * 1.0
+  isValid *= (user_profit_by_provider > 0) * 1.0
+  return [(np.sum(isValid)) * provider_price, provider_price]
 
 def provider_gradients(provider_prices, selected_provider, max_prices, user_preferences):
 
@@ -134,11 +143,11 @@ def provider_gradients(provider_prices, selected_provider, max_prices, user_pref
 
   high_prof, high_price = higher_profit(provider_prices, selected_provider, max_prices, user_preferences)
   #print(low_prof, same_prof, high_prof)
-
+  #print(low_price, same_price, high_price)
 
   if (low_prof > same_prof and low_prof > high_prof):
     return low_price
-  elif (high_prof > same_prof):
+  elif (high_prof >= same_prof):
     return high_price
   else:
     return same_price
