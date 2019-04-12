@@ -1,50 +1,148 @@
 import tensorflow as tf
 import numpy as np
 
-def provider_gradients(provider_prices, selected_provider, max_prices, user_preferences):
+def sigmoid(x, derivative=False):
+  return x*(1-x) if derivative else 1/(1+np.exp(-x))
 
-  num_providers = provider_prices.shape[1]
-  num_users = max_prices.shape[1]
+def lower_profit(provider_prices, selected_provider, max_prices, user_preferences):
+  num_providers = provider_prices.shape[0]
+  num_users = max_prices.shape[0]
 
-  provider_price = provider_prices[:, selected_provider[0]]
+  provider_price = provider_prices[selected_provider]
   # user profits across all the providers
-  user_profits = tf.tile(tf.expand_dims(max_prices,2), [1, 1, num_providers]) +\
+  user_profits = np.tile(np.expand_dims(max_prices,1), [1, num_providers]) +\
                  user_preferences
-  # max_profit by provider
-  max_profit_by_provider = user_profits[:, :, selected_provider[0]]
 
   user_profits = user_profits - provider_prices
 
   # gets the max of the profits
-  user_max_profit = tf.reduce_max(user_profits, 2)
+  user_max_profit = np.max(user_profits, 1)
+  user_argmax_profit = np.argmax(user_profits, 1)
 
   # gets all of the users profits for a single provider
-  user_profit_by_provider = user_profits[:, :, tf.to_int32(selected_provider[0])]
+  user_profit_by_provider = user_profits[:, selected_provider]
 
-  # checks if the provider profits are greater than the highest profit from other companies
-  #isValid = tf.to_float(tf.math.equal(user_profit_by_provider, user_max_profit))
-  isValid = tf.to_float(tf.math.sigmoid(user_max_profit - user_profit_by_provider))
+  isValid = (selected_provider == user_argmax_profit) * 1.0
+  isValid *= (user_profit_by_provider > 0) * 1.0
+  
+  num_count = np.sum(isValid)
+  if (num_count == len(isValid)):
+    
+    return [0.0, 0.0]
+  while (np.sum(isValid) == num_count and provider_price > 0):
+    provider_price -= .01
+    user_profits[:, selected_provider] += .01
+      # gets the max of the profits
+    user_max_profit = np.max(user_profits, 1)
+
+    # gets all of the users profits for a single provider
+    user_profit_by_provider = user_profits[:, selected_provider]
+
+    isValid = (user_max_profit == user_profit_by_provider) * 1.0
+    isValid *= (user_profit_by_provider > 0) * 1.0
+
+  return [np.sum(isValid) * provider_price, provider_price]
+
+def same_profit(provider_prices, selected_provider, max_prices, user_preferences):
+  num_providers = provider_prices.shape[0]
+  num_users = max_prices.shape[0]
+
+  provider_price = provider_prices[selected_provider]
+
+  # user profits across all the providers
+  user_profits = np.tile(np.expand_dims(max_prices,1), [1, num_providers]) +\
+                 user_preferences
+
+  user_profits = user_profits - provider_prices
+
+  # gets the max of the profits
+  user_max_profit = np.max(user_profits, 1)
+  user_argmax_profit = np.argmax(user_profits, 1)
+
+  # gets all of the users profits for a single provider
+  user_profit_by_provider = user_profits[:, selected_provider]
+
+  isValid = (selected_provider == user_argmax_profit) * 1.0
+  isValid *= (user_profit_by_provider > 0) * 1.0
+  
+  num_count = np.sum(isValid)
+  if (num_count == 0):
+    return [0.0, 0.0]
+
+  while (np.sum(isValid) == num_count):
+    #print(isValid, provider_price)
+    provider_price += .01
+    user_profits[:, selected_provider] -= .01
+      # gets the max of the profits
+    user_max_profit = np.max(user_profits, 1)
+
+    # gets all of the users profits for a single provider
+    user_profit_by_provider = user_profits[:, selected_provider]
+
+    isValid = (user_max_profit == user_profit_by_provider) * 1.0
+    isValid *= (user_profit_by_provider > 0) * 1.0
+  provider_price -= .01
+
+  return [num_count * provider_price, provider_price]
+
+def higher_profit(provider_prices, selected_provider, max_prices, user_preferences):
+  num_providers = provider_prices.shape[0]
+  num_users = max_prices.shape[0]
+
+  provider_price = provider_prices[selected_provider]
+
+  # user profits across all the providers
+  user_profits = np.tile(np.expand_dims(max_prices,1), [1, num_providers]) +\
+                 user_preferences
+
+  user_profits = user_profits - provider_prices
+
+  # gets the max of the profits
+  user_max_profit = np.max(user_profits, 1)
+  user_argmax_profit = np.argmax(user_profits, 1)
+
+  # gets all of the users profits for a single provider
+  user_profit_by_provider = user_profits[:, selected_provider]
+
+  isValid = (selected_provider == user_argmax_profit) * 1.0
+  isValid *= (user_profit_by_provider > 0) * 1.0
+  
+  num_count = np.sum(isValid)
+  if (num_count < 1):
+    return [0.0, 0.0]
+
+  while (np.sum(isValid) >= num_count - 1 and np.sum(isValid > 0)):
+    provider_price += .01
+    user_profits[:, selected_provider] -= .01
+      # gets the max of the profits
+    user_max_profit = np.max(user_profits, 1)
+
+    # gets all of the users profits for a single provider
+    user_profit_by_provider = user_profits[:, selected_provider]
+
+    isValid = (user_max_profit == user_profit_by_provider) * 1.0
+    isValid *= (user_profit_by_provider > 0) * 1.0
+
+  provider_price -= .01
+
+  return [(np.sum(isValid)+1) * provider_price, provider_price]
+
+def provider_gradients(provider_prices, selected_provider, max_prices, user_preferences):
+
+  low_prof, low_price = lower_profit(provider_prices, selected_provider, max_prices, user_preferences)
+  same_prof, same_price = same_profit(provider_prices, selected_provider, max_prices, user_preferences)
+
+  high_prof, high_price = higher_profit(provider_prices, selected_provider, max_prices, user_preferences)
+  print(low_prof, same_prof, high_prof)
 
 
-  # checks if the user will benefit from buying
-  #isValid = isValid * tf.to_float(tf.math.greater(user_profit_by_provider, 0))
-  isValid = isValid * tf.to_float(tf.sigmoid(user_profit_by_provider))
+  if (low_prof > same_prof and low_prof > high_prof):
+    return low_price
+  elif (high_prof > same_prof):
+    return high_price
+  else:
+    return same_price
 
-
-  isNotValid = (isValid * -1 + 1)
-
-  profit = tf.reduce_sum(provider_price * isValid)
-  loss = tf.reduce_sum((provider_price - (user_max_profit - user_profit_by_provider)) * isNotValid)
-  loss -= tf.reduce_sum(((user_max_profit - user_profit_by_provider)) * isValid)
-
-  potential = tf.reduce_sum((max_profit_by_provider - provider_price) * isValid)
-
-  #gradients = tf.squeeze(tf.gradients(profit - loss - potential, provider_price))
-  gradients = tf.squeeze(tf.gradients(profit -loss - potential, provider_price))
-  temp = [tf.gradients(profit, provider_price)[0], tf.gradients(loss, provider_price)[0], tf.gradients(potential, provider_price)]
-  #temp = isNotValid
-
-  return [gradients, temp]
 
 def user_utilities(max_prices, provider_prices, user_preferences):
   utilities = np.zeros((len(max_prices), len(provider_prices)))
