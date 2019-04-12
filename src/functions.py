@@ -18,10 +18,7 @@ def profit_helper(provider_prices, selected_provider, max_prices, user_preferenc
 
   provider_price = provider_prices[selected_provider]
   # user profits across all the providers
-  user_profits = np.tile(np.expand_dims(max_prices,1), [1, num_providers]) +\
-                 user_preferences
-
-  user_profits = user_profits - provider_prices
+  user_profits = user_utilities(max_prices, provider_prices, user_preferences)
 
   isValid = computeIsValid(user_profits, selected_provider)
   
