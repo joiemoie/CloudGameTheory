@@ -5,10 +5,12 @@ import matplotlib.cm as cm
 
 num_providers = 8
 num_users = 1000
+num_resources_types = 3
 
 random_prices = np.random.random((num_users)) * 5 + 10
 #random_prices = np.full((num_users), 12.5)
-final_prices = np.full(num_providers, 0.0)
+#final_prices = np.full(num_providers, 0.0)
+final_prices = np.random.random((num_providers)) * 10
 random_preferences = np.random.random((num_users, num_providers)) * 10
 random_preferences[:,0] += np.random.random((num_users)) * 5
 
