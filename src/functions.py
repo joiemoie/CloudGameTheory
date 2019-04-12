@@ -100,10 +100,12 @@ def provider_gradients(provider_prices, selected_provider, max_prices, user_pref
 
 
 def user_utilities(max_prices, provider_prices, user_preferences):
-  utilities = np.zeros((len(max_prices), len(provider_prices)))
-  for i in range(len(max_prices)):
-    utilities[i] = max_prices[i] - provider_prices + user_preferences[i]
-  return utilities
+  num_providers = provider_prices.shape[0]
+
+  user_profits = np.tile(np.expand_dims(max_prices,1), [1, num_providers]) +\
+                 user_preferences
+  return user_profits
+
 # numpy function
 def user_assignments(provider_prices, max_prices, user_preferences):
 
