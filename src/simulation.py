@@ -5,15 +5,21 @@ import matplotlib.cm as cm
 
 num_providers = 8
 num_users = 1000
-num_resource_types = 1
+num_resource_types = 2
 
 random_prices = np.random.random((num_users, num_resource_types)) * 5 + 10
-random_prices[:, 0] += 5
-#random_prices = np.full((num_users), 12.5)
-#final_prices = np.full(num_providers, 0.0)
+
 final_prices = np.random.random((num_providers, num_resource_types)) * 10
-random_preferences = np.random.random((num_users, num_providers)) * 10
+random_preferences = np.random.random((num_users, num_providers)) * 5
 random_preferences[:,0] += np.random.random((num_users)) * 5
+
+def price_to_quantity(prices):
+  slope = (2.0 - 5.0) / (15.0 - 10.0)
+
+  return prices * slope + 16.2
+
+quantities = price_to_quantity(random_prices)
+random_prices[:, 0] += 5
 
 lr = .1
 
@@ -33,11 +39,11 @@ for step in range(1000):
 
     for k in range(num_resource_types):
 
-      grad = functions.provider_gradients(final_prices , i, k, random_prices, random_preferences)
+      grad = functions.provider_gradients(final_prices , i, k, random_prices, quantities, random_preferences)
 
       final_prices[i, k] = grad
 
-    assignments = functions.user_assignments(final_prices, random_prices, random_preferences)
+    assignments = functions.user_assignments(final_prices, random_prices, quantities, random_preferences)
 
     if (step % 10 == 0):
       prov_profits = functions.provider_profits(final_prices, assignments)
