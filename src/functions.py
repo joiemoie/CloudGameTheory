@@ -1,7 +1,6 @@
 import numpy as np
 
 update_rate = .01
-min_price = 10
 
 def computeIsValid(user_profits, selected_provider):
   # gets the max of the profits
@@ -16,63 +15,86 @@ def computeIsValid(user_profits, selected_provider):
   isValid *= (user_profit_by_provider > 0) * 1.0
   return isValid
 
-def profit_helper(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences):
+def profit_helper(provider_prices, provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences):
   num_providers = provider_prices.shape[0]
   num_users = max_prices.shape[0]
 
   provider_price = provider_prices[selected_provider, selected_resource]
+  provider_cost = provider_costs[selected_provider, selected_resource]
   # user profits across all the providers
   user_profits = user_utilities(max_prices, quantities, provider_prices, user_preferences)
 
   isValid = computeIsValid(user_profits, selected_provider)
   
-  return [isValid, provider_price, user_profits]
+  return [isValid, provider_price, provider_cost, user_profits]
 
 
-def lower_profit(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences):
+def lower_profit(provider_prices, provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences):
 
-  isValid, provider_price, user_profits = profit_helper(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences)
+  isValid, provider_price, provider_cost, user_profits = profit_helper(provider_prices, provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences)
 
   num_count = np.sum(isValid)
   if (num_count == len(isValid)):
     return [0.0, 0.0]
 
-  while (np.sum(isValid) == num_count and provider_price > min_price):
+  profit = np.sum(isValid) * (provider_price - provider_cost)
+
+  while ((np.sum(isValid) == num_count) and profit >= 0):
     provider_price -= update_rate
     user_profits[:, selected_resource, selected_provider] += update_rate * quantities[:,selected_resource]
       # gets the max of the profits
     isValid = computeIsValid(user_profits, selected_provider)
+    profit = np.sum(isValid) * (provider_price - provider_cost)
 
-  return [np.sum(isValid) * provider_price, provider_price]
+  if (profit < 0):
+    provider_price += update_rate
+    user_profits[:, selected_resource, selected_provider] += update_rate * quantities[:,selected_resource]
+      # gets the max of the profits
+    isValid = computeIsValid(user_profits, selected_provider)
+    profit = np.sum(isValid) * (provider_price - provider_cost)
+  return [profit, provider_price]
 
-def same_profit(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences):
-  isValid, provider_price, user_profits = profit_helper(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences)
-  
+def same_profit(provider_prices,provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences):
+  isValid, provider_price,provider_cost, user_profits = profit_helper(provider_prices,provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences)
+
   num_count = np.sum(isValid)
   if (num_count == 0):
     return [0.0, 0.0]
 
-  while (np.sum(isValid) == num_count):
+
+  profit = np.sum(isValid) * (provider_price - provider_cost)
+
+  while (np.sum(isValid) == num_count and profit > 0):
     #print(isValid, provider_price)
     provider_price += update_rate
+
     user_profits[:, selected_resource, selected_provider] -= update_rate * quantities[:,selected_resource]
     isValid = computeIsValid(user_profits, selected_provider)
+    profit = np.sum(isValid) * (provider_price - provider_cost)
+
 
   provider_price -= update_rate
+  profit = np.sum(isValid) * (provider_price - provider_cost)
 
-  return [num_count * provider_price, provider_price]
 
-def higher_profit(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences):
-  isValid, provider_price, user_profits = profit_helper(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences)
-  
+  return [profit, provider_price]
+
+def higher_profit(provider_prices,provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences):
+  isValid, provider_price, provider_cost, user_profits = profit_helper(provider_prices, provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences)
+
   num_count = np.sum(isValid)
   if (num_count < 1):
     return [0.0, 0.0]
   old_prov_privce = provider_price
-  while (np.sum(isValid) >= num_count - 1 and np.sum(isValid) > 0):
+
+  profit = np.sum(isValid) * (provider_price - provider_cost)
+
+  while (np.sum(isValid) >= num_count - 1 and profit > 0):
     provider_price += update_rate
+
     user_profits[:, selected_resource, selected_provider] -= update_rate * quantities[:,selected_resource]
     isValid = computeIsValid(user_profits, selected_provider)
+    profit = np.sum(isValid) * (provider_price - provider_cost)
 
 
   if (provider_price-update_rate != old_prov_privce):
@@ -80,15 +102,17 @@ def higher_profit(provider_prices, selected_provider, selected_resource, max_pri
 
   user_profits[:, selected_resource, selected_provider] += update_rate
   isValid = computeIsValid(user_profits, selected_provider)
+  profit = np.sum(isValid) * (provider_price - provider_cost)
 
-  return [(np.sum(isValid)) * provider_price, provider_price]
 
-def updated_price(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences):
+  return [profit, provider_price]
 
-  low_prof, low_price = lower_profit(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences)
-  same_prof, same_price = same_profit(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences)
+def updated_price(provider_prices,provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences):
 
-  high_prof, high_price = higher_profit(provider_prices, selected_provider, selected_resource, max_prices, quantities, user_preferences)
+  low_prof, low_price = lower_profit(provider_prices,provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences)
+  same_prof, same_price = same_profit(provider_prices,provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences)
+
+  high_prof, high_price = higher_profit(provider_prices,provider_costs, selected_provider, selected_resource, max_prices, quantities, user_preferences)
   #print(low_prof, same_prof, high_prof)
   #print(low_price, same_price, high_price)
 
@@ -129,8 +153,8 @@ def user_assignments(provider_prices, max_prices, quantities, user_preferences):
     
 
 # numpy function
-def provider_profits(provider_prices, assignments):
+def provider_profits(provider_prices, quantities,provider_costs, assignments):
   result = np.zeros(len(provider_prices))
   for i in range(len(provider_prices)):
-    result[i] = np.sum(assignments == i) * np.sum(provider_prices[i])
+    result[i] = np.sum((assignments == i) * quantities * (provider_prices[i] - provider_costs[i]))
   return result

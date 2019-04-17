@@ -15,10 +15,11 @@ random_prices = np.random.random((num_users, num_resource_types)) * 5 + 10
 # Set the initial starting prices for the companies
 final_prices = np.random.random((num_providers, num_resource_types)) * 5 + 10
 final_costs = np.full((num_providers, num_resource_types), 10.0)
+final_costs[0, :] -= 1
 
 # Set the user preferences
 random_preferences = np.random.random((num_users, num_providers)) * 1
-random_preferences[:,0] += np.random.random((num_users)) * 3
+#random_preferences[:,0] += np.random.random((num_users)) * 3
 
 # function which converts price to quantity based on the demand function
 
