@@ -9,25 +9,20 @@ num_users = 1000
 num_resource_types = 1
 
 # Set the max prices for the users
-random_prices = np.random.random((num_users, num_resource_types)) * 2 + 10
-random_prices[:, 0] += 5
+random_prices = np.random.random((num_users, num_resource_types)) * 5 + 10
 
 
 # Set the initial starting prices for the companies
-final_prices = np.random.random((num_providers, num_resource_types)) * 2 + 10
+final_prices = np.random.random((num_providers, num_resource_types)) * 5 + 10
 
 # Set the user preferences
-random_preferences = np.random.random((num_users, num_providers)) * .5
-random_preferences[:,0] += np.random.random((num_users)) * .3
+random_preferences = np.random.random((num_users, num_providers)) * 1
+random_preferences[:,0] += np.random.random((num_users)) * 3
 
 # function which converts price to quantity based on the demand function
-def price_to_quantity(prices):
-  slope = (2.0 - 5.0) / (15.0 - 10.0)
-
-  return prices * slope + 16.2
 
 # Sets the quantities demanded
-quantities = price_to_quantity(random_prices)
+quantities = np.random.random((num_users, num_resource_types)) * 3 + 10
 
 # stores the final prices for each iteration
 results = np.zeros((1000, num_resource_types))
