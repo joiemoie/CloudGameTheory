@@ -14,6 +14,7 @@ random_prices = np.random.random((num_users, num_resource_types)) * 5 + 10
 
 # Set the initial starting prices for the companies
 final_prices = np.random.random((num_providers, num_resource_types)) * 5 + 10
+final_costs = np.full((num_providers, num_resource_types), 10.0)
 
 # Set the user preferences
 random_preferences = np.random.random((num_users, num_providers)) * 1
@@ -44,7 +45,7 @@ for step in range(1000):
     #iterates through each resource type
     for k in range(num_resource_types):
 
-      new_price = functions.updated_price(final_prices , i, k, random_prices, quantities, random_preferences)
+      new_price = functions.updated_price(final_prices,final_costs , i, k, random_prices, quantities, random_preferences)
 
       final_prices[i, k] = new_price
 
@@ -55,7 +56,7 @@ for step in range(1000):
     if (step % 10 == 0):
 
       # computes the provider profits
-      prov_profits = functions.provider_profits(final_prices, assignments)
+      prov_profits = functions.provider_profits(final_prices, quantities,final_costs, assignments)
 
       # prints some useful intormation
       print(i, prov_profits, final_prices, np.mean(random_preferences, axis=0))
