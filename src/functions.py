@@ -1,5 +1,8 @@
 import numpy as np
 
+update_rate = .01
+min_price = 10
+
 def computeIsValid(user_profits, selected_provider):
   # gets the max of the profits
   user_profits_summed = np.sum(user_profits, 1)
@@ -34,9 +37,9 @@ def lower_profit(provider_prices, selected_provider, selected_resource, max_pric
   if (num_count == len(isValid)):
     return [0.0, 0.0]
 
-  while (np.sum(isValid) == num_count and provider_price > 0):
-    provider_price -= .001
-    user_profits[:, selected_resource, selected_provider] += .001 * quantities[:,selected_resource]
+  while (np.sum(isValid) == num_count and provider_price > min_price):
+    provider_price -= update_rate
+    user_profits[:, selected_resource, selected_provider] += update_rate * quantities[:,selected_resource]
       # gets the max of the profits
     isValid = computeIsValid(user_profits, selected_provider)
 
@@ -51,11 +54,11 @@ def same_profit(provider_prices, selected_provider, selected_resource, max_price
 
   while (np.sum(isValid) == num_count):
     #print(isValid, provider_price)
-    provider_price += .001
-    user_profits[:, selected_resource, selected_provider] -= .001 * quantities[:,selected_resource]
+    provider_price += update_rate
+    user_profits[:, selected_resource, selected_provider] -= update_rate * quantities[:,selected_resource]
     isValid = computeIsValid(user_profits, selected_provider)
 
-  provider_price -= .001
+  provider_price -= update_rate
 
   return [num_count * provider_price, provider_price]
 
@@ -67,15 +70,15 @@ def higher_profit(provider_prices, selected_provider, selected_resource, max_pri
     return [0.0, 0.0]
   old_prov_privce = provider_price
   while (np.sum(isValid) >= num_count - 1 and np.sum(isValid) > 0):
-    provider_price += .001
-    user_profits[:, selected_resource, selected_provider] -= .001 * quantities[:,selected_resource]
+    provider_price += update_rate
+    user_profits[:, selected_resource, selected_provider] -= update_rate * quantities[:,selected_resource]
     isValid = computeIsValid(user_profits, selected_provider)
 
 
-  if (provider_price-.001 != old_prov_privce):
-    provider_price-= .001
+  if (provider_price-update_rate != old_prov_privce):
+    provider_price-= update_rate
 
-  user_profits[:, selected_resource, selected_provider] += .001
+  user_profits[:, selected_resource, selected_provider] += update_rate
   isValid = computeIsValid(user_profits, selected_provider)
 
   return [(np.sum(isValid)) * provider_price, provider_price]
