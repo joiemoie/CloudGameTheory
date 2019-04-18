@@ -76,26 +76,11 @@ plt.show()
 
 
 ## Market share results (2017)
-fig = plt.figure(figsize=(12, 4))
+fig = plt.figure(figsize=(4, 4))
 labels = ['AWS', 'Azure', 'Google', 'IBM']
 
 # predict market share using model
 final_profits = prov_profits
-fig.add_subplot(1, 3, 1)
 plt.title("Prediction on model")
 plt.pie(final_profits, labels=labels, autopct = '%3.2f%%', colors=colors)
-
-# predict market share using real prices
-real_prices = np.array([[0.133], [0.100], [0.136], [0.137]]) # 2017 w SSD
-assignments = functions.user_assignments(real_prices, random_prices, quantities, random_preferences)
-final_profits = functions.provider_profits(real_prices, quantities, final_costs, assignments)
-fig.add_subplot(1, 3, 2)
-plt.title("Prediction on real prices")
-plt.pie(final_profits, labels=labels, autopct = '%3.2f%%', colors=colors)
-
-# real market share
-real_market_share = [0.6, 0.2, 0.0706, 0.1294]
-fig.add_subplot(1, 3, 3)
-plt.title("Real market share in 2017")
-plt.pie(real_market_share, labels=labels, autopct = '%3.2f%%', colors=colors)
 plt.show()
