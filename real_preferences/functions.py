@@ -1,6 +1,6 @@
 import numpy as np
 
-update_rate = .01
+update_rate = .001
 
 # get preferred provider# according to preference distribution
 def get_preference(n):

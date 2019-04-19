@@ -2,6 +2,7 @@ import numpy as np
 import functions
 import matplotlib.pyplot as plt
 import matplotlib.cm as cm
+import matplotlib.patches as mpatches
 
 # Set these parameters
 num_providers = 4
@@ -31,6 +32,10 @@ colors = cm.rainbow(np.linspace(0, 1, num_providers))
 fig=plt.figure(figsize=(8, 4))
 columns = 2
 rows = 1
+labels = ["AWS", "Azure", "Google", "IBM"]
+handles = []
+for i in range(num_providers):
+    handles.append(mpatches.Patch(color=colors[i], label=labels[i]))
 
 # iterates through 1000 iterations.
 for step in range(1000):
@@ -66,8 +71,15 @@ for step in range(1000):
       fig.add_subplot(rows, columns, 1)
       plt.ylim((0.080, 0.150))
       plt.scatter(np.full((num_resource_types), step), results[step], c=colors[i])
+      plt.xlabel("Iterations")
+      plt.ylabel("Final prices")
+      plt.legend(handles=handles, loc="best")
+
       fig.add_subplot(rows, columns, 2)
       plt.scatter(step, prov_profits[i], c=colors[i])
+      plt.xlabel("Iterations")
+      plt.ylabel("Provider profits")
+      plt.legend(handles=handles, loc="best")
 
       plt.draw()
 
@@ -77,7 +89,6 @@ plt.show()
 
 ## Market share results (2017)
 fig = plt.figure(figsize=(4, 4))
-labels = ['AWS', 'Azure', 'Google', 'IBM']
 
 # predict market share using model
 final_profits = prov_profits
