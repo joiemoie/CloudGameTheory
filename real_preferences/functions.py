@@ -6,11 +6,11 @@ update_rate = .0001
 def get_preference(n):
   winner = np.random.uniform(0.025, 0.035)
   losers = [np.random.uniform(-0.01, 0.01) for _ in range(3)]
-  if n < 0.5:
+  if n < 0.606:
     return [winner] + losers
-  elif n < 0.79:
+  elif n < 0.819:
     return losers[:1] + [winner] + losers[1:]
-  elif n < 0.92:
+  elif n < 0.926:
     return losers[:2] + [winner] + losers[2:]
   else:
     return losers + [winner]
