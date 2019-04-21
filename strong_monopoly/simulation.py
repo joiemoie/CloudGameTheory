@@ -13,11 +13,8 @@ num_resource_types = 1
 random_prices = np.random.random((num_users, num_resource_types)) * 0.040 + 0.100
 
 # Set the initial starting prices for the companies
-final_prices = np.random.random((num_providers, num_resource_types)) * 0.040 + 0.100
-final_prices[0] = .14
-final_prices[1] = .13
-final_prices[2] = .12
-final_prices[3] = .11
+final_prices = np.random.random((num_providers, num_resource_types)) * 0.005 + 0.100
+final_prices[0] = .15
 final_costs = np.full((num_providers, num_resource_types), 0.08)
 
 # Set the user preferences
@@ -36,7 +33,7 @@ colors = cm.rainbow(np.linspace(0, 1, num_providers))
 fig=plt.figure(figsize=(8, 4))
 columns = 2
 rows = 1
-labels = ["AWS", "Azure", "Google", "IBM"]
+labels = ["Monopoly", "Other 1", "Other 2", "Other 3"]
 handles = []
 for i in range(num_providers):
     handles.append(mpatches.Patch(color=colors[i], label=labels[i]))

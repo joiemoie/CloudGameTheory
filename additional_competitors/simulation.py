@@ -5,7 +5,7 @@ import matplotlib.cm as cm
 import matplotlib.patches as mpatches
 
 # Set these parameters
-num_providers = 4
+num_providers = 8
 num_users = 1000
 num_resource_types = 1
 
@@ -13,15 +13,15 @@ num_resource_types = 1
 random_prices = np.random.random((num_users, num_resource_types)) * 0.040 + 0.100
 
 # Set the initial starting prices for the companies
-final_prices = np.random.random((num_providers, num_resource_types)) * 0.040 + 0.100
-final_prices[0] = .14
-final_prices[1] = .13
-final_prices[2] = .12
-final_prices[3] = .11
+final_prices = np.random.random((num_providers, num_resource_types)) * 0.005 + 0.100
+final_prices[0] = .15
+final_prices[1] = .14
+final_prices[2] = .13
+final_prices[3] = .12
 final_costs = np.full((num_providers, num_resource_types), 0.08)
 
 # Set the user preferences
-random_preferences = np.array([functions.get_preference(np.random.random()) for _ in range(num_users)])
+random_preferences = np.array([functions.get_preference(np.random.random() * 1.2) for _ in range(num_users)])
 
 # function which converts price to quantity based on the demand function
 
@@ -36,7 +36,7 @@ colors = cm.rainbow(np.linspace(0, 1, num_providers))
 fig=plt.figure(figsize=(8, 4))
 columns = 2
 rows = 1
-labels = ["AWS", "Azure", "Google", "IBM"]
+labels = ["AWS", "Azure", "Google", "IBM", "Other 1", "Other 2", "Other 3", "Other 4"]
 handles = []
 for i in range(num_providers):
     handles.append(mpatches.Patch(color=colors[i], label=labels[i]))
