@@ -1,6 +1,18 @@
 import numpy as np
 
-update_rate = .001
+update_rate = .0001
+
+def get_preference(n):
+  winner = np.random.uniform(0.025, 0.035)
+  losers = [np.random.uniform(-0.01, 0.01) for _ in range(3)]
+  if n < 0.5:
+    return [winner] + losers
+  elif n < 0.79:
+    return losers[:1] + [winner] + losers[1:]
+  elif n < 0.92:
+    return losers[:2] + [winner] + losers[2:]
+  else:
+    return losers + [winner]
 
 def computeIsValid(user_profits, selected_provider):
   # gets the max of the profits
