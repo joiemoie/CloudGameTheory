@@ -12,35 +12,28 @@ num_resource_types = 1
 # Set the max prices for the users
 random_prices = np.random.random((num_users, num_resource_types)) * (0.14 - 0.1) + 0.1
 
-
 # Set the initial starting prices for the companies
 final_prices = np.random.random((num_providers, num_resource_types)) * (0.14 - 0.1) + 0.1
+final_prices[0] = .14
+final_prices[1] = .13
+final_prices[2] = .12
+final_prices[3] = .11
 final_costs = np.full((num_providers, num_resource_types), 0.1)
 
 # Set the user preferences
-random_preferences = np.random.random((num_users, num_providers)) * 0.02 - 0.01
-random_user_value = np.random.random((num_users))
-for i in range(num_users):
-    if random_user_value[i] < 0.25:
-        random_preferences[i, 0] = np.random.random() * (0.035 - 0.025) + 0.025
-    elif random_user_value[i] < 0.5:
-        random_preferences[i, 1] = np.random.random() * (0.035 - 0.025) + 0.025
-    elif random_user_value[i] < 0.75:
-        random_preferences[i, 2] = np.random.random() * (0.035 - 0.025) + 0.025
-    else:
-        random_preferences[i, 3] = np.random.random() * (0.035 - 0.025) + 0.025
+random_preferences = np.array([functions.get_preference(np.random.random()) for _ in range(num_users)])
 #random_preferences[:,0] += np.random.random((num_users)) * 3
 
 # function which converts price to quantity based on the demand function
 
 # Sets the quantities demanded
-quantities = np.random.randint(low = 10, high = 13, size = (num_users, num_resource_types))
+quantities = np.array([[np.random.randint(10, 13) for _ in range(num_resource_types)] for _ in range(num_users)])
 
 # stores the final prices for each iteration
 results = np.zeros((1000, num_resource_types))
 
 # information for setting the numpy plot
-colors = cm.rainbow(np.linspace(0, 1, 4))
+colors = cm.rainbow(np.linspace(0, 1, num_providers))
 fig=plt.figure(figsize=(16, 16))
 columns = 2
 rows = 1
