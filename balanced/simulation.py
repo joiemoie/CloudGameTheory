@@ -14,10 +14,10 @@ random_prices = np.random.random((num_users, num_resource_types)) * (0.14 - 0.1)
 
 # Set the initial starting prices for the companies
 final_prices = np.random.random((num_providers, num_resource_types)) * (0.14 - 0.1) + 0.1
-final_prices[0] = .14
-final_prices[1] = .13
+final_prices[0] = .12
+final_prices[1] = .12
 final_prices[2] = .12
-final_prices[3] = .11
+final_prices[3] = .12
 final_costs = np.full((num_providers, num_resource_types), 0.1)
 
 # Set the user preferences
